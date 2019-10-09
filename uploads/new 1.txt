@@ -1,0 +1,244 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct node_book
+{
+    char author[20] ;
+    char title[20] ;
+    char publisher[20] ;
+    double cost;
+    int numberOfCopies ;
+    int numberOfIssued;
+    char  booking_date[50] ;
+    char Date_of_cancellation[50];
+
+    int data;
+    struct node* next;
+} node;
+
+typedef void (*callback)(node* data);
+
+/*
+    create a new node
+    initialize the data and next field
+
+    return the newly created node
+*/
+node* create(int data,node* next)
+{
+    node* new_node = (node*)malloc(sizeof(node));
+    if(new_node == NULL)
+    {
+        printf("Error creating a new node.\n");
+        exit(0);
+    }
+    new_node->data = data;
+    new_node->next = next;
+
+    return new_node;
+}
+
+/*
+    add a new node at the beginning of the list
+*/
+node* prepend(node* head,int data)
+{
+    node* new_node = create(data,head);
+    head = new_node;
+    return head;
+}
+
+/*
+    add a new node at the end of the list
+*/
+node* append(node* head, int data)
+{
+    if(head == NULL)
+        return NULL;
+    /* go to the last node */
+    node *cursor = head;
+    while(cursor->next != NULL)
+        cursor = cursor->next;
+
+    /* create a new node */
+    node* new_node =  create(data,NULL);
+    cursor->next = new_node;
+
+    return head;
+}
+
+
+/*
+    traverse the linked list
+*/
+void traverse(node* head,callback f)
+{
+    node* cursor = head;
+    while(cursor != NULL)
+    {
+        f(cursor);
+        cursor = cursor->next;
+    }
+}
+
+
+/*
+    remove a node from the list
+*/
+node* remove_any(node* head,node* nd)
+{
+    if(nd == NULL)
+        return NULL;
+
+
+
+    /* if the node is in the middle */
+    node* cursor = head;
+    while(cursor != NULL)
+    {
+        if(cursor->next == nd)
+            break;
+        cursor = cursor->next;
+    }
+
+    if(cursor != NULL)
+    {
+        node* tmp = cursor->next;
+        cursor->next = tmp->next;
+        tmp->next = NULL;
+        free(tmp);
+    }
+    return head;
+
+}
+/*
+    display a node
+*/
+void display(node* n)
+{
+    if(n != NULL)
+        printf("%d ", n->data);
+}
+
+/*
+    Search for a specific node with input data
+
+    return the first matched node that stores the input data,
+    otherwise return NULL
+*/
+node* search(node* head,int data)
+{
+
+    node *cursor = head;
+    while(cursor!=NULL)
+    {
+        if(cursor->data == data)
+            return cursor;
+        cursor = cursor->next;
+    }
+    return NULL;
+}
+
+/*
+    remove all element of the list
+*/
+void dispose(node *head)
+{
+    node *cursor, *tmp;
+
+    if(head != NULL)
+    {
+        cursor = head->next;
+        head->next = NULL;
+        while(cursor != NULL)
+        {
+            tmp = cursor->next;
+            free(cursor);
+            cursor = tmp;
+        }
+    }
+}
+
+
+
+/*
+    display the menu
+*/
+void menu()
+{
+    printf("--- Library Management System --- \n\n");
+    printf("    0 => menu\n");
+    printf("    1 => Add New book\n");
+    printf("    2 => search for an element\n");
+    printf("    3 => remove any node\n");
+    printf("   -1 => Exit\n");
+
+}
+
+int main()
+{
+    int command = 0;
+    int data;
+
+    node* head = NULL;
+    node* tmp = NULL;
+    callback disp = display;
+
+    menu();
+    while(1)
+    {
+        printf("\nEnter a Choice you need :");
+        scanf("%d",&command);
+
+        if(command == -1)
+            break;
+        switch(command)
+        {
+        case 0:
+            menu();
+            break;
+        case 1:
+            printf("Please enter a number to append:");
+            scanf("%d",&data);
+            head = prepend(head,data);
+            traverse(head,disp);
+            break;
+
+        case 2:
+            printf("Please enter a number to search:");
+            scanf("%d",&data);
+            tmp = search(head,data);
+            if(tmp != NULL)
+            {
+                printf("Element with value %d found.",data);
+            }
+            else
+            {
+                printf("Element with value %d not found.",data);
+            }
+            break;
+
+
+        case 3:
+            printf("Enter the element value to remove:");
+            scanf("%d",&data);
+            tmp = search(head,data);
+            if(tmp != NULL)
+            {
+                remove_any(head,tmp);
+                if(head != NULL)
+                    traverse(head,disp);
+            }
+            else
+            {
+                printf("Element with value %d not found.",data);
+            }
+            break;
+
+
+        }
+
+    }
+    dispose(head);
+    return 0;
+}
